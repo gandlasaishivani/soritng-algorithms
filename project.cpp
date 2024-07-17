@@ -5,14 +5,18 @@
 #include <cstdlib>
 
 // Test function prototype
-bool testSortingAlgorithm(const std::string& code);
+bool testAlgorithm(const std::string& code, const std::string& algorithmType);
 
 int main() {
+    std::string algorithmType;
+    std::cout << "Enter the algorithm type (sort/search): ";
+    std::getline(std::cin, algorithmType);
+
     std::string code;
-    std::cout << "Enter the sorting algorithm code: ";
+    std::cout << "Enter the " << algorithmType << " algorithm code: ";
     std::getline(std::cin, code);
 
-    if (testSortingAlgorithm(code)) {
+    if (testAlgorithm(code, algorithmType)) {
         std::cout << "Yes\n";
     } else {
         std::cout << "No\n";
@@ -21,12 +25,14 @@ int main() {
     return 0;
 }
 
-bool testSortingAlgorithm(const std::string& code) {
-    // Function signature for the sort function
-    std::string funcSignature = "void sort(std::vector<int>& arr)";
-    
-    // Complete code with the function signature and the user-provided code
-    std::string fullCode = R"(
+bool testAlgorithm(const std::string& code, const std::string& algorithmType) {
+    std::string funcSignature, fullCode;
+
+    if (algorithmType == "sort") {
+        // Function signature for the sort function
+        funcSignature = "void sort(std::vector<int>& arr)";
+        // Complete code with the function signature and the user-provided code
+        fullCode = R"(
 #include <vector>
 #include <iostream>
 #include <algorithm> // for std::swap
@@ -40,6 +46,26 @@ int main() {
     return 0;
 }
 )";
+    } else if (algorithmType == "search") {
+        // Function signature for the search function
+        funcSignature = "int search(const std::vector<int>& arr, int target)";
+        // Complete code with the function signature and the user-provided code
+        fullCode = R"(
+#include <vector>
+#include <iostream>
+)" + funcSignature + " {\n" + code + "\n}\n" + R"(
+int main() {
+    std::vector<int> arr = {4, 2, 7, 1, 3};
+    int target = 7;
+    int index = search(arr, target);
+    std::cout << index;
+    return 0;
+}
+)";
+    } else {
+        std::cerr << "Unknown algorithm type\n";
+        return false;
+    }
 
     // Write the code to a temporary file
     std::ofstream tmpFile("temp.cpp");
@@ -57,7 +83,7 @@ int main() {
     }
 
     // Run the compiled program and capture the output
-    if (system("./temp > output.txt") != 0) {
+    if (system("temp > output.txt") != 0) {
         std::cerr << "Execution failed\n";
         return false;
     }
@@ -76,9 +102,17 @@ int main() {
     }
     outputFile.close();
 
-    // Expected output
-    std::vector<int> expected = {1, 2, 3, 4, 7};
+    if (algorithmType == "sort") {
+        // Expected output for sort
+        std::vector<int> expected = {1, 2, 3, 4, 7};
+        // Compare the output with the expected result
+        return arr == expected;
+    } else if (algorithmType == "search") {
+        // Expected output for search
+        int expectedIndex = 2; // for target = 7
+        // Compare the output with the expected result
+        return !arr.empty() && arr[0] == expectedIndex;
+    }
 
-    // Compare the output with the expected result
-    return arr == expected;
+    return false;
 }
